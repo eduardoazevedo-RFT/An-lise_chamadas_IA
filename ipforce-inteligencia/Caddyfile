@@ -1,17 +1,9 @@
-# Substitua SEU_DOMINIO.COM pelo seu dominio real
+# Opcional para etapa posterior.
 SEU_DOMINIO.COM {
-    # Frontend (Next.js)
-    handle_path / {
+    handle /api/* {
+        reverse_proxy backend:8000
+    }
+    handle {
         reverse_proxy frontend:3000
-    }
-
-    # API Backend
-    handle_path /api/* {
-        reverse_proxy backend:8000
-    }
-
-    # Gravacoes proxy
-    handle_path /gravacao/* {
-        reverse_proxy backend:8000
     }
 }

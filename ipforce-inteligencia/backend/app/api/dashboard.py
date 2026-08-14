@@ -6,11 +6,13 @@ from app.core.database import get_db
 from app.models.chamada import Chamada
 from app.models.transcricao import Transcricao
 from app.models.analise import Analise
+from app.models.user import User
+from app.api.auth import get_current_user
 
 router = APIRouter(prefix="/dashboard", tags=["dashboard"])
 
 @router.get("/hoje")
-async def dashboard_hoje(db: AsyncSession = Depends(get_db)):
+async def dashboard_hoje(db: AsyncSession = Depends(get_db), _user: User = Depends(get_current_user)):
     hoje = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
     amanha = hoje + timedelta(days=1)
 
@@ -38,7 +40,7 @@ async def dashboard_hoje(db: AsyncSession = Depends(get_db)):
     }
 
 @router.get("/alertas")
-async def listar_alertas(db: AsyncSession = Depends(get_db), limit: int = 20):
+async def listar_alertas(db: AsyncSession = Depends(get_db), limit: int = 20, _user: User = Depends(get_current_user)):
     result = await db.execute(
         select(Chamada)
         .where(Chamada.alerta_nivel.in_(["importante", "critico"]))

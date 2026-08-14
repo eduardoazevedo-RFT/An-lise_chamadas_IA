@@ -15,14 +15,18 @@ class PABXService:
         formato: str = "registros",
         origem: Optional[str] = None,
         destino: Optional[str] = None,
+        hora_inicial: str = "00:00:00",
+        hora_final: str = "23:59:59",
     ) -> Dict[str, Any]:
+        if not self.base_url or not self.api_key:
+            raise RuntimeError("PABX_BASE_URL e PABX_API_KEY precisam estar configurados no .env")
         url = f"{self.base_url}/api/cdr"
         data = {
             "formato": formato,
             "data_inicial": data_inicial,
             "data_final": data_final,
-            "hora_inicial": "00:00:00",
-            "hora_final": "23:59:59",
+            "hora_inicial": hora_inicial,
+            "hora_final": hora_final,
         }
         if origem:
             data["origem"] = origem
@@ -35,6 +39,8 @@ class PABXService:
             return resp.json()
 
     def get_gravacao_url(self, record_id: str, converter: int = 1) -> str:
+        if not self.base_url or not self.api_key:
+            raise RuntimeError("PABX_BASE_URL e PABX_API_KEY precisam estar configurados no .env")
         return f"{self.base_url}/api/recordticket/{self.api_key}/{record_id}/{converter}"
 
     async def baixar_gravacao(self, record_id: str, converter: int = 1) -> bytes:

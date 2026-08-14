@@ -13,9 +13,10 @@ class WhisperXService:
         self.model = None
         self.align_model = None
         self.diarize_model = None
-        self._load_model()
 
     def _load_model(self):
+        if self.model is not None:
+            return
         print(f"[WhisperX] Carregando modelo {self.model_name} em {self.device}...")
         self.model = whisperx.load_model(
             self.model_name,
@@ -28,8 +29,12 @@ class WhisperXService:
     def transcribe(self, audio_path: str) -> dict:
         start = time.time()
 
+        # Carrega o modelo apenas quando a primeira transcricao for executada.
+        self._load_model()
+
         # 1. Transcricao
-        result = self.model.transcribe(audio_path, batch_size=16)
+        batch_size = 16 if self.device == "cuda" else 4
+        result = self.model.transcribe(audio_path, batch_size=batch_size)
 
         # 2. Alinhamento de palavras
         model_a, metadata = whisperx.load_align_model(language_code=result["language"], device=self.device)

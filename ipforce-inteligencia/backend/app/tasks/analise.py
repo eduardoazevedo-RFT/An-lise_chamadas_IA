@@ -11,8 +11,7 @@ from app.services.ollama_service import ollama_service
 
 @shared_task(name="app.tasks.analise.processar_analise", max_retries=2, default_retry_delay=30)
 def processar_analise(chamada_id: int):
-    loop = asyncio.get_event_loop()
-    return loop.run_until_complete(_processar_analise(chamada_id))
+    return asyncio.run(_processar_analise(chamada_id))
 
 async def _processar_analise(chamada_id: int):
     db = AsyncSessionLocal()
@@ -67,8 +66,7 @@ async def _processar_analise(chamada_id: int):
 
 @shared_task(name="app.tasks.analise.gerar_resumo_diario")
 def gerar_resumo_diario():
-    loop = asyncio.get_event_loop()
-    return loop.run_until_complete(_gerar_resumo_diario())
+    return asyncio.run(_gerar_resumo_diario())
 
 async def _gerar_resumo_diario():
     db = AsyncSessionLocal()

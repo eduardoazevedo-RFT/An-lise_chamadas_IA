@@ -12,6 +12,7 @@ export default function ChamadaDetalhePage() {
   const params = useParams();
   const id = params.id as string;
   const [data, setData] = useState<any>(null);
+  const [audioUrl, setAudioUrl] = useState<string>("");
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : "";
 
   useEffect(() => {
@@ -21,6 +22,17 @@ export default function ChamadaDetalhePage() {
       .then(setData)
       .catch(() => {});
   }, [id, router, token]);
+
+  useEffect(() => {
+    const recordId = data?.chamada?.record_id;
+    if (!token || !recordId || !data?.chamada?.tem_gravacao) return;
+    let objectUrl = "";
+    fetch(`/api/gravacao/${recordId}`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(async (r) => { if (!r.ok) throw new Error("Falha ao carregar gravacao"); return r.blob(); })
+      .then((blob) => { objectUrl = URL.createObjectURL(blob); setAudioUrl(objectUrl); })
+      .catch(() => setAudioUrl(""));
+    return () => { if (objectUrl) URL.revokeObjectURL(objectUrl); };
+  }, [data, token]);
 
   if (!data) return <div className="flex h-screen items-center justify-center"><p>Carregando...</p></div>;
 
@@ -50,7 +62,11 @@ export default function ChamadaDetalhePage() {
               <p><strong>Tronco:</strong> {chamada.tronco}</p>
               {chamada.tem_gravacao && (
                 <div className="pt-4">
-                  <audio controls src={`/api/gravacao/${chamada.record_id}`} className="w-full" />
+                  {audioUrl ? (
+                    <audio controls src={audioUrl} className="w-full" />
+                  ) : (
+                    <p className="text-sm text-muted-foreground">Carregando gravacao...</p>
+                  )}
                 </div>
               )}
             </CardContent>

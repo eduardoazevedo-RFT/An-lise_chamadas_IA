@@ -4,10 +4,11 @@ from sqlalchemy import select, func, and_, or_
 from typing import Optional, List
 from datetime import datetime, date
 from app.core.database import get_db
-from app.api.auth import oauth2_scheme, decode_token
+from app.api.auth import get_current_user
 from app.models.chamada import Chamada
 from app.models.transcricao import Transcricao
 from app.models.analise import Analise
+from app.models.user import User
 from app.services.pabx import pabx_service
 from app.tasks.sync import sync_cdr_periodo
 
@@ -28,6 +29,7 @@ async def listar_cdr(
     oportunidade: Optional[bool] = None,
     page: int = Query(1, ge=1),
     limit: int = Query(50, ge=1, le=200),
+    _user: User = Depends(get_current_user),
 ):
     query = select(Chamada)
 
@@ -84,7 +86,7 @@ async def listar_cdr(
     }
 
 @router.get("/{chamada_id}")
-async def detalhe_chamada(chamada_id: int, db: AsyncSession = Depends(get_db)):
+async def detalhe_chamada(chamada_id: int, db: AsyncSession = Depends(get_db), _user: User = Depends(get_current_user)):
     result = await db.execute(select(Chamada).where(Chamada.id == chamada_id))
     chamada = result.scalar_one_or_none()
     if not chamada:
@@ -150,6 +152,6 @@ async def detalhe_chamada(chamada_id: int, db: AsyncSession = Depends(get_db)):
     }
 
 @router.post("/sync")
-async def forcar_sync(data_inicial: str, data_final: str):
+async def forcar_sync(data_inicial: str, data_final: str, _user: User = Depends(get_current_user)):
     task = sync_cdr_periodo.delay(data_inicial, data_final)
     return {"task_id": task.id, "status": "iniciado"}

@@ -27,10 +27,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(auth.router, prefix="/api/auth")
-app.include_router(cdr.router, prefix="/api/cdr")
-app.include_router(gravacao.router, prefix="/api/gravacao")
-app.include_router(dashboard.router, prefix="/api/dashboard")
+app.include_router(auth.router, prefix="/api")
+app.include_router(cdr.router, prefix="/api")
+app.include_router(gravacao.router, prefix="/api")
+app.include_router(dashboard.router, prefix="/api")
 
 @app.get("/api/health")
 async def health():

@@ -1,11 +1,13 @@
-from fastapi import APIRouter, HTTPException, Response
+from fastapi import APIRouter, HTTPException, Response, Depends
 from app.services.pabx import pabx_service
 import httpx
+from app.api.auth import get_current_user
+from app.models.user import User
 
 router = APIRouter(prefix="/gravacao", tags=["gravacao"])
 
 @router.get("/{record_id}")
-async def proxy_gravacao(record_id: str, converter: int = 1):
+async def proxy_gravacao(record_id: str, converter: int = 1, _user: User = Depends(get_current_user)):
     url = pabx_service.get_gravacao_url(record_id, converter)
     try:
         async with httpx.AsyncClient(verify=False, timeout=120) as client:
